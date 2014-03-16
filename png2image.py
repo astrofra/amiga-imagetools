@@ -1,4 +1,8 @@
 #!/usr/bin/python
+
+"""
+For license, see gpl-3.0.txt
+"""
 from PIL import Image
 import argparse
 import math

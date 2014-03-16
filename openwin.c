@@ -1,3 +1,4 @@
+/* For license, please see gpl-3.0.txt */
 #include <exec/types.h>
 #include <intuition/intuition.h>
 #include <clib/exec_protos.h>
