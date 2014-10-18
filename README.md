@@ -10,4 +10,6 @@ To try it out
 
 make
 
-This project was tested with VBCC and Kickstart 1.3
+This project was tested with :
+ - VBCC and Kickstart 1.3
+ - SAS/C and Kickstart 3.1
