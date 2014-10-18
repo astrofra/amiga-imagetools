@@ -22,8 +22,12 @@ def color_to_plane_bits(color, depth):
 def write_amiga_image(image, destfile):
     imdata = im.getdata()
     width, height = im.size
-    colors = [i for i in chunks(map(ord, im.palette.tobytes()), 3)]
-    depth = int(math.log(len(colors), 2))
+    colors = [i for i in chunks(map(ord, im.palette.tostring()), 3)]
+    colors_amount = 2 * int(len(colors) / 2)
+    if colors_amount < len(colors):
+        colors_amount = len(colors) + 1
+    depth = int(math.log(colors_amount, 2))
+    print("width, height, colors, depth = %d, %d, %d, %d." % (width, height, len(colors), depth))
 
     map_words_per_row = width / 16
     if width % 16 > 0:
@@ -54,7 +58,7 @@ def write_amiga_image(image, destfile):
         outfile.write('UWORD imdata[] = {\n')
         for plane in planes:
             for chunk in chunks(plane, map_words_per_row):
-                outfile.write(','.join(map(str, chunk)))
+                outfile.write(','.join(map(str, map(hex, chunk))))
                 outfile.write(',\n')
             outfile.write('\n')
         outfile.write('};\n\n')

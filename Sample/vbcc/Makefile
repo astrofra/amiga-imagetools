@@ -8,5 +8,5 @@ clean:
 	rm -f openwin
 
 openwin: openwin.c
-	$(CC) $(CFLAGS) openwin.c -lamiga -o openwin
+	$(CC) $(CFLAGS) ../src/openwin.c -lamiga -o openwin
 
