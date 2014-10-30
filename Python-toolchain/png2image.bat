@@ -1,2 +1,1 @@
-python png2image.py --pngfile ilkke_font.png --destfile ilkke_font_imgdata
-pause
+python png2image.py --pngfile cat_copper.png --destfile cat_copper

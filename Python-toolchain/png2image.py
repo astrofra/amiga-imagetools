@@ -4,6 +4,7 @@
 For license, see gpl-3.0.txt
 """
 from PIL import Image
+import os
 import argparse
 import math
 
@@ -31,10 +32,7 @@ def color_to_RGB4(rgb_color_triplet):
 
 
 def write_amiga_image(image, destfile):
-	destfile = destfile.replace('.c', '')
-	destfile = destfile.replace('.C', '')
-	destfile = destfile.replace('.h', '')
-	destfile = destfile.replace('.H', '')
+	destfile = os.path.splitext(destfile)[0] 
 
 	imdata = im.getdata()
 	width, height = im.size
@@ -68,46 +66,47 @@ def write_amiga_image(image, destfile):
 			x += 16
 
 	##  Header file
-	with open(destfile + '.h', 'w') as outfile:
-		outfile.write('#include <intuition/intuition.h>\n\n')
-		outfile.write('extern UWORD paldataRGB4[%d];\n' % (len(colors)))
-		outfile.write('extern UWORD imdata[%d];\n' % (depth * map_words_per_row * height))
+	with open(destfile + '.h', 'w') as h_outfile:
+		h_outfile.write('#include <intuition/intuition.h>\n\n')
+		h_outfile.write('extern UWORD ' + destfile + '_paldataRGB4[%d];\n' % (len(colors)))
+		h_outfile.write('extern UWORD ' + destfile + '_imdata[%d];\n' % (depth * map_words_per_row * height))
+		h_outfile.write('\n')
+
+		planepick = 2 ** depth - 1  # currently we always use all of the planes
+		h_outfile.write('struct Image %s_image = {\n' % destfile)
+		h_outfile.write('\t0, 0, %d, %d, %d, %s_imdata,\n' % (width, height, depth, destfile));
+		h_outfile.write('\t%d, 0, NULL\n' % planepick)  # PlanePick, PlaneOnOff
+		h_outfile.write('};\n')
 
 	##  C file
-	with open(destfile + '.c', 'w') as outfile:
-		outfile.write('#include <intuition/intuition.h>\n\n')
+	with open(destfile + '.c', 'w') as c_outfile:
+		c_outfile.write('#include <intuition/intuition.h>\n\n')
 
 		##  Palettes
-		outfile.write("/* Image palette, RGB4 format (OCS/ECS machines) */\n");
-		outfile.write('UWORD paldataRGB4[] = {\n')
-		outfile.write('\t')
+		c_outfile.write("/* Image palette, RGB4 format (OCS/ECS machines) */\n");
+		c_outfile.write('UWORD paldataRGB4[] = {\n')
+		c_outfile.write('\t')
 		tpal = im.palette.tostring()
 		tpal = map(ord, tpal)
 		tpal = chunks(tpal, 3)
 		for color_rgb in chunks(map(ord, im.palette.tostring()), 3):
-			outfile.write(str(hex(color_to_RGB4(color_rgb))) + ',')
-		outfile.write('\n')
-		outfile.write('};\n\n')
+			c_outfile.write(str(hex(color_to_RGB4(color_rgb))) + ',')
+		c_outfile.write('\n')
+		c_outfile.write('};\n\n')
 
 		##  Bitplanes
-		outfile.write("/* Ensure that this data is within chip memory or you'll see nothing !!! */\n");
-		outfile.write('UWORD imdata[] = {\n')
+		c_outfile.write("/* Ensure that this data is within chip memory or you'll see nothing !!! */\n");
+		c_outfile.write('UWORD imdata[] = {\n')
 		plane_idx = 0
 		for plane in planes:
-			outfile.write("\t/* Bitplane #%d */\n" % (plane_idx));
+			c_outfile.write("\t/* Bitplane #%d */\n" % (plane_idx));
 			for chunk in chunks(plane, map_words_per_row):
-				outfile.write('\t')
-				outfile.write(','.join(map(str, map(hex, chunk))))
-				outfile.write(',\n')
-			outfile.write('\n')
+				c_outfile.write('\t')
+				c_outfile.write(','.join(map(str, map(hex, chunk))))
+				c_outfile.write(',\n')
+			c_outfile.write('\n')
 			plane_idx += 1
-		outfile.write('};\n\n')
-
-		planepick = 2 ** depth - 1  # currently we always use all of the planes
-		outfile.write('struct Image image = {\n')
-		outfile.write('\t0, 0, %d, %d, %d, imdata,\n' % (width, height, depth));
-		outfile.write('\t%d, 0, NULL\n' % planepick)  # PlanePick, PlaneOnOff
-		outfile.write('};\n')
+		c_outfile.write('};\n\n')
 
 
 if __name__ == '__main__':
