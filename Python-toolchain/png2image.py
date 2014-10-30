@@ -68,8 +68,8 @@ def write_amiga_image(image, destfile):
 	##  Header file
 	with open(destfile + '.h', 'w') as h_outfile:
 		h_outfile.write('#include <intuition/intuition.h>\n\n')
-		h_outfile.write('extern UWORD ' + destfile + '_paldataRGB4[%d];\n' % (len(colors)))
-		h_outfile.write('extern UWORD ' + destfile + '_imdata[%d];\n' % (depth * map_words_per_row * height))
+		h_outfile.write('extern UWORD %s_paldataRGB4[%d];\n' % (destfile, len(colors)))
+		h_outfile.write('extern UWORD %s_imdata[%d];\n' % (destfile, depth * map_words_per_row * height))
 		h_outfile.write('\n')
 
 		planepick = 2 ** depth - 1  # currently we always use all of the planes
@@ -84,7 +84,7 @@ def write_amiga_image(image, destfile):
 
 		##  Palettes
 		c_outfile.write("/* Image palette, RGB4 format (OCS/ECS machines) */\n");
-		c_outfile.write('UWORD paldataRGB4[] = {\n')
+		c_outfile.write('UWORD %s_paldataRGB4[] = {\n' % destfile)
 		c_outfile.write('\t')
 		tpal = im.palette.tostring()
 		tpal = map(ord, tpal)
@@ -96,7 +96,7 @@ def write_amiga_image(image, destfile):
 
 		##  Bitplanes
 		c_outfile.write("/* Ensure that this data is within chip memory or you'll see nothing !!! */\n");
-		c_outfile.write('UWORD imdata[] = {\n')
+		c_outfile.write('UWORD %s_imdata[] = {\n' % destfile)
 		plane_idx = 0
 		for plane in planes:
 			c_outfile.write("\t/* Bitplane #%d */\n" % (plane_idx));
